@@ -150,7 +150,7 @@ where
     fn write_read_i16(&mut self, register: Register) -> Result<i16, E> {
         let mut buffer = [0u8; 2];
         self.write_read_register(register, &mut buffer)?;
-        Ok(i16::from_be_bytes(buffer))
+        Ok(i16::from_le_bytes(buffer))
     }
 
     /// Write to a given register, then read a `u16` result
@@ -181,9 +181,10 @@ where
         let raw_data: I16x3 = self.accel_raw()?;
         let range: f32 = self.data_format.range().into();
 
-        let x = (raw_data.x as f32 / core::i16::MAX as f32) * range;
-        let y = (raw_data.y as f32 / core::i16::MAX as f32) * range;
-        let z = (raw_data.z as f32 / core::i16::MAX as f32) * range;
+        // TODO: support for full-resolution measurements (consult p.32 of the datasheet)
+        let x = (raw_data.x as f32 / 512 as f32) * range;
+        let y = (raw_data.y as f32 / 512 as f32) * range;
+        let z = (raw_data.z as f32 / 512 as f32) * range;
 
         Ok(F32x3::new(x, y, z))
     }
